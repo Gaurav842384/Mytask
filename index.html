@@ -78,10 +78,17 @@
             transform: translateY(0);
         }
 
+        .status-line {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
         .filter-section {
             display: flex;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -208,6 +215,8 @@
             <button id="addBtn">Add</button>
         </div>
 
+        <div class="status-line">Tasks are saved locally in this browser and will persist after refresh.</div>
+
         <div class="filter-section">
             <button class="filter-btn active" data-filter="all">All</button>
             <button class="filter-btn" data-filter="pending">Pending</button>
@@ -224,8 +233,10 @@
         const addBtn = document.getElementById('addBtn');
         const tasksList = document.getElementById('tasksList');
         const filterBtns = document.querySelectorAll('.filter-btn');
+        const statusLine = document.querySelector('.status-line');
+        const STORAGE_KEY = 'taskManagerTasks';
         
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         let currentFilter = 'all';
 
         // Initialize tasks on load
@@ -292,9 +303,17 @@
 
         function renderTasks() {
             const filteredTasks = getFilteredTasks();
-            
+            const totalTasks = tasks.length;
+            const visibleTasks = filteredTasks.length;
+            const filterLabel = currentFilter === 'all' ? 'All' : currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1);
+
+            statusLine.textContent = `${filterLabel} · ${visibleTasks} of ${totalTasks} task${totalTasks === 1 ? '' : 's'}`;
+
             if (filteredTasks.length === 0) {
-                tasksList.innerHTML = '<div class="empty-message">No tasks to display</div>';
+                const emptyMessage = totalTasks === 0
+                    ? 'No tasks yet. Add one to get started!'
+                    : `No ${currentFilter} tasks found.`;
+                tasksList.innerHTML = `<div class="empty-message">${emptyMessage}</div>`;
                 return;
             }
 
@@ -312,7 +331,7 @@
         }
 
         function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
         }
 
         function escapeHtml(text) {
